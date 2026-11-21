@@ -1,15 +1,16 @@
-# 🏗️ Arsitektur & Dokumentasi Teknis — ATMOS
+# 🏗️ Technical Architecture — ATMOS
 
-Dokumen ini menjelaskan arsitektur modul, alur data real-time, mesin animasi kanvas, dan sintesis audio prosedural yang menggerakkan **ATMOS**.
+This document outlines the modular architecture, real-time data pipeline, 60fps Canvas sky engine, bilingual localization system, and procedural Web Audio synthesizer powering **ATMOS**.
 
 ---
 
-## 🧭 Diagram Alur Modul
+## 🧭 Module Dependency Flow
 
 ```mermaid
 flowchart LR
     UI["🖥️ index.html + styles.css"] <--> APP["⚙️ js/app.js (Controller & State)"]
-    APP --> API["🌐 js/weatherApi.js"]
+    APP --> I18N["🌐 js/i18n.js (EN / ID)"]
+    APP --> API["🛰️ js/weatherApi.js"]
     APP --> SKY["🎨 js/skyEngine.js (60fps Canvas)"]
     APP --> CHARTS["📈 js/charts.js (SVG Charts)"]
     APP --> ICONS["✨ js/icons.js (Animated SVG)"]
@@ -25,65 +26,62 @@ flowchart LR
 
 ---
 
-## 📦 Rincian Modul
+## 📦 Module Breakdown
 
-### 1. 🌐 `js/weatherApi.js` — Lapisan Data Real-Time
-Bertanggung jawab mengambil, menormalisasi, dan menginterpretasi data cuaca global tanpa memerlukan API key:
-- **`fetchWeatherBundle(lat, lon)`**: Mengambil data *Forecast* (`current`, `hourly`, `daily`) dan *Air Quality* (`us_aqi`, `european_aqi`, `pm2_5`, `pm10`, `ozone`, `no2`) secara paralel via `Promise.all`.
-- **`fetchQuickWeather(cities)`**: Batch-fetch suhu ringkas untuk seluruh kota di bar akses cepat dalam satu request Open-Meteo multi-koordinat.
-- **`searchCities(query, signal)`**: Pencarian kota instan berbasis Open-Meteo Geocoding API dengan dukungan `AbortController`.
-- **`reverseGeocode(lat, lon)` & `detectLocationByIp()`**: Resolusi nama kota dari GPS browser (BigDataCloud) dengan *fallback* otomatis berbasis IP (`get.geojs.io` → `ipwho.is`).
-- **`interpretWmoCode(code, isDay)`**: Memetakan seluruh standar **WMO Weather Interpretation Codes (0–99)** ke deskripsi Bahasa Indonesia, nama ikon SVG, kategori adegan langit (`clear`, `partly-cloudy`, `overcast`, `rain`, `storm`, `snow`, `fog`), dan tingkat intensitas partikel (`0.0–1.0`).
+### 1. 🛰️ `js/weatherApi.js` — Real-Time Data Layer
+Handles fetching, normalizing, and interpreting global meteorological data without requiring API keys:
+- **`fetchWeatherBundle(lat, lon)`**: Fetches Forecast (`current`, `hourly`, `daily`) and Air Quality (`us_aqi`, `european_aqi`, `pm2_5`, `pm10`, `ozone`, `no2`) in parallel via `Promise.all`.
+- **`fetchQuickWeather(cities)`**: Batch-fetches live temperatures for all quick-bar cities in a single multi-coordinate Open-Meteo request.
+- **`searchCities(query, signal, lang)`**: Live worldwide geocoding autocomplete with `AbortController` race-condition protection.
+- **`reverseGeocode(lat, lon, lang)` & `detectLocationByIp()`**: Resolves browser GPS coordinates via BigDataCloud with an automatic IP-based fallback chain (`get.geojs.io` → `ipwho.is`).
+- **`interpretWmoCode(code, isDay, lang)`**: Maps standard **WMO Weather Interpretation Codes (0–99)** into localized descriptions, animated SVG icon keys, sky scenes (`clear`, `partly-cloudy`, `overcast`, `rain`, `storm`, `snow`, `fog`), and particle intensities (`0.0–1.0`).
 
-### 2. 🎨 `js/skyEngine.js` — Mesin Animasi Langit 60fps
-Mesin rendering berbasis HTML5 Canvas dengan dukungan `devicePixelRatio` hingga `2x` dan `prefers-reduced-motion`:
-- **Interpolasi Warna Halus**: Transisi gradien 3-titik langit (`top`, `mid`, `bottom`) diinterpolasi per frame berdasarkan kombinasi `scene` × `phase` (`dawn`, `day`, `golden`, `night`).
-- **Pointer Parallax**: Pergerakan kursor menggeser matahari/bulan, bintang, dan 3 lapisan kedalaman awan secara proporsional.
-- **Sistem Partikel Adaptif**:
-  - ☀️ **Cerah**: Halo surya berlapis, 10 berkas sinar berputar lembut, dan partikel cahaya melayang (*dust motes*).
-  - 🌙 **Malam**: Ratusan bintang berkelip dengan kedalaman berbeda, bulan berkawah dengan halo, serta bintang jatuh acak (*shooting stars*).
-  - 🌧️ **Hujan**: Tetesan miring yang sudutnya bereaksi terhadap `windSpeed` real-time + efek riak percikan di tepi bawah layar.
-  - ⛈️ **Badai Petir**: Generator petir bercabang prosedural (*recursive-style jagged bolt*) lengkap dengan kilatan atmosfer dan callback `onLightning()` untuk menyinkronkan suara guntur.
-  - ❄️ **Salju & 🌫️ Kabut**: Serpihan salju berayun sinusoidal dan pita kabut berlapis.
+### 2. 🌐 `js/i18n.js` — Bilingual Localization (`ID / EN`)
+- Centralized translation dictionary for **Indonesian (`id`)** and **English (`en`)** persisted via `localStorage` (`atmos_lang_v1`).
+- Covers static UI labels (`data-i18n`), WMO weather states, wind cardinals, Beaufort scale descriptions, AQI/UV advice, smart contextual insights, localized `Intl.DateTimeFormat` dates, and toast notifications.
 
-### 3. 📈 `js/charts.js` — Visualisasi SVG Interaktif
-- **Grafik 24 Jam (`renderHourlyChart`)**: Kurva *Catmull-Rom cubic Bezier* yang mulus dengan *pointer capture scrubbing* (mouse & touch) untuk 4 metrik: Suhu, Peluang Hujan, Angin, dan UV.
-- **Lintasan Matahari (`renderSunArc`)**: Kurva parabola Bezier kuadratik berdasarkan perbandingan waktu lokal saat ini terhadap timestamp `sunrise` & `sunset` nyata.
-- **Kompas Angin (`renderWindCompass`)**: Jarum SVG beranimasi CSS *cubic-bezier* yang menunjuk arah angin aktual (`0°–360°`).
+### 3. 🎨 `js/skyEngine.js` — 60fps HTML5 Canvas Sky Engine
+DPR-scaled (`≤ 2x`) real-time canvas engine with `prefers-reduced-motion` support:
+- **Smooth Sky Interpolation**: Per-frame RGB linear interpolation across 3-stop sky gradients driven by `scene × timePhase` (`dawn`, `day`, `golden`, `night`).
+- **Pointer Parallax**: Subtle cursor-driven depth offset across celestial bodies, stars, and 3 cloud depth layers.
+- **Adaptive Particle Systems**: Rotating sunbeams & dust motes, twinkling stars + shooting stars, wind-angled rain with splash ripples, procedural branching lightning bolts with flash bloom (`onLightning` hook), swaying snowflakes, and layered drifting fog.
 
-### 4. 🔊 `js/soundEngine.js` — Sintesis Audio Atmosfer
-Menggunakan **Web Audio API** murni tanpa file `.mp3`/`.wav`:
-- Menghasilkan buffer *stereo pink noise* 4 detik yang seamless.
-- Memprosesnya melalui `BiquadFilterNode` (`lowpass` untuk hujan/badai, `bandpass` untuk angin/salju/kabut) yang dimodulasi LFO frekuensi rendah (`0.14 Hz`).
-- **`playThunder()`**: Membangkitkan dentuman guntur berfrekuensi rendah (`190 Hz → 52 Hz`) saat kilat menyambar di kanvas.
+### 4. 📈 `js/charts.js` — Interactive SVG Visualizations
+- **24-Hour Forecast (`renderHourlyChart`)**: Catmull-Rom cubic Bezier spline with pointer-capture hover/drag scrubbing for Temperature, Rain Probability, Wind Speed, and UV Index.
+- **Sun Trajectory (`renderSunArc`)**: Quadratic Bezier solar arc calibrated against each city's real `sunrise` and `sunset` timestamps.
+- **Wind Compass (`renderWindCompass`)**: Smoothly rotated vector needle with localized cardinal labels (`N/E/S/W` or `U/T/S/B`).
 
-### 5. ⚙️ `js/app.js` — State & Kontroler Utama
-- **Deteksi Lokasi Otomatis**:
-  1. Memeriksa mode lokasi tersimpan (`auto` vs `manual` di `localStorage`).
-  2. Pada mode `auto`, mencoba `navigator.geolocation` terlebih dahulu, lalu *fallback* otomatis ke `detectLocationByIp()`, lalu *fallback* akhir ke Jakarta jika offline.
-- **Jam Lokal Real-Time**: Menghitung waktu lokal kota target setiap detik menggunakan `utc_offset_seconds` dari Open-Meteo.
-- **Sinkronisasi Otomatis**: Data cuaca diperbarui otomatis di latar belakang setiap **10 menit**.
+### 5. 🔊 `js/soundEngine.js` — Procedural Web Audio Engine
+Pure browser-native synthesis with zero external audio assets:
+- Generates a seamless 4-second stereo pink-noise buffer routed through an LFO-modulated `BiquadFilterNode` (`lowpass` for rain/storm, `bandpass` for gentle breeze/snow/fog).
+- **`playThunder()`**: Synthesizes a low-frequency decaying rumble (`190 Hz → 52 Hz`) triggered whenever lightning flashes on the canvas.
+
+### 6. ⚙️ `js/app.js` — Application State & Controller
+- **Automatic Location Bootstrap**: Runs `navigator.geolocation` → `detectLocationByIp()` → default city fallback on initial visit (`auto` mode), while respecting manual city selection until the user clicks the GPS button again.
+- **Live City Clock**: Computes the target city's exact local time every second from `utc_offset_seconds`.
+- **Auto Sync**: Refreshes weather data silently every **10 minutes**.
 
 ---
 
-## 🗂️ Struktur Direktori
+## 🗂️ Project Structure
 
 ```text
 atmos-live/
 ├── assets/
-│   ├── banner.svg        # Banner visual untuk README
-│   └── favicon.svg       # Ikon vektor aplikasi
+│   ├── banner.svg        # Custom README hero banner
+│   └── favicon.svg       # Vector app icon
 ├── css/
-│   └── styles.css        # Tema glassmorphism, layout bento, animasi ikon & responsif
+│   └── styles.css        # Adaptive glassmorphism, bento layout & icon animations
 ├── docs/
-│   └── ARCHITECTURE.md   # Dokumentasi teknis & arsitektur sistem
+│   └── ARCHITECTURE.md   # Technical architecture & module docs
 ├── js/
-│   ├── app.js            # Kontroler aplikasi, state, GPS auto-detect, pencarian & FX dock
-│   ├── charts.js         # Grafik 24 jam scrubbable, Sun Arc & Kompas Angin SVG
-│   ├── icons.js          # Koleksi ikon cuaca SVG beranimasi
-│   ├── skyEngine.js      # Mesin animasi langit & partikel HTML5 Canvas 60fps
-│   ├── soundEngine.js    # Mesin suara atmosfer Web Audio API
-│   └── weatherApi.js     # Integrasi Open-Meteo Forecast, AQI, Geocoding & IP fallback
+│   ├── app.js            # Main controller, state, auto-location, i18n & FX dock
+│   ├── charts.js         # Interactive 24h SVG chart, Sun Arc & Wind Compass
+│   ├── i18n.js           # Bilingual EN / ID translation dictionary
+│   ├── icons.js          # Animated custom SVG weather icons
+│   ├── skyEngine.js      # 60fps HTML5 Canvas sky & particle physics engine
+│   ├── soundEngine.js    # Procedural Web Audio API weather ambience
+│   └── weatherApi.js     # Open-Meteo Forecast, AQI, Geocoding & IP fallback
 ├── .gitignore
 ├── index.html
 ├── LICENSE

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ATMOS — Observatorium Cuaca Interaktif Real-Time</title>
-  <meta name="description" content="Website cuaca interaktif dengan animasi langit real-time, grafik prakiraan 24 jam, kualitas udara AQI, kompas angin, dan data langsung dari Open-Meteo." />
+  <meta name="description" content="Interactive real-time weather observatory with 60fps dynamic sky animations, 24-hour scrubbable forecast charts, air quality AQI, animated wind compass, and live Open-Meteo data." />
   <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -27,7 +27,7 @@
         </div>
         <div class="brand-text">
           <span class="brand-name">ATMOS</span>
-          <span class="status-pill" id="live-status-pill" title="Sumber data real-time Open-Meteo">
+          <span class="status-pill" id="live-status-pill" title="Open-Meteo Real-Time Data">
             <span class="status-dot"></span>
             <span id="live-status-text">LIVE</span>
           </span>
@@ -44,11 +44,11 @@
           id="city-search"
           placeholder="Cari kota mana saja (mis. Bandung, Tokyo, Zurich)..."
           autocomplete="off"
-          aria-label="Cari nama kota"
+          aria-label="Search city"
           aria-expanded="false"
           aria-controls="search-results"
         />
-        <button type="button" class="icon-btn" id="geo-btn" title="Gunakan lokasi GPS saya" aria-label="Gunakan lokasi GPS saya">
+        <button type="button" class="icon-btn" id="geo-btn" title="Gunakan lokasi GPS saya" aria-label="Use my GPS location">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/>
           </svg>
@@ -58,19 +58,25 @@
 
       <!-- Kontrol Cepat -->
       <div class="topbar-actions">
-        <button type="button" class="action-pill" id="unit-toggle" title="Ubah satuan suhu (°C / °F)" aria-label="Ubah satuan suhu">
+        <button type="button" class="action-pill" id="lang-toggle" title="Ganti bahasa (ID / EN)" aria-label="Switch language">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+          <span id="lang-label">ID</span>
+        </button>
+        <button type="button" class="action-pill" id="unit-toggle" title="Ubah satuan suhu (°C / °F)" aria-label="Switch temperature unit">
           <span id="unit-label">°C</span>
         </button>
-        <button type="button" class="action-pill" id="sound-toggle" title="Suara atmosfer cuaca (Web Audio)" aria-label="Aktifkan suara cuaca" aria-pressed="false">
+        <button type="button" class="action-pill" id="sound-toggle" title="Suara atmosfer cuaca (Web Audio)" aria-label="Toggle ambient weather sound" aria-pressed="false">
           <svg id="sound-icon-off" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M11 5 6 9H2v6h4l5 4V5Z"/><line x1="22" y1="9" x2="16" y2="15"/><line x1="16" y1="9" x2="22" y2="15"/>
           </svg>
           <span class="eq-bars" id="sound-eq" hidden aria-hidden="true">
             <i></i><i></i><i></i>
           </span>
-          <span class="action-text">Suara</span>
+          <span class="action-text" data-i18n="soundLabel">Suara</span>
         </button>
-        <button type="button" class="icon-btn glass-btn" id="refresh-btn" title="Muat ulang data real-time" aria-label="Muat ulang data cuaca">
+        <button type="button" class="icon-btn glass-btn" id="refresh-btn" title="Muat ulang data real-time" aria-label="Refresh weather data">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/>
           </svg>
@@ -79,13 +85,13 @@
     </header>
 
     <!-- Strip Kota Cepat & Favorit -->
-    <nav class="quick-cities-bar" aria-label="Kota pilihan cepat">
+    <nav class="quick-cities-bar" aria-label="Quick cities">
       <div class="quick-cities-scroll" id="quick-cities"></div>
     </nav>
 
     <!-- Dock Playground Efek Animasi Langit -->
-    <section class="fx-dock" aria-label="Simulasi animasi cuaca">
-      <span class="fx-dock-label">Efek Langit:</span>
+    <section class="fx-dock" aria-label="Sky animation presets">
+      <span class="fx-dock-label" data-i18n="fxDockLabel">Efek Langit:</span>
       <div class="fx-pills" id="fx-pills">
         <button type="button" class="fx-pill active" data-fx="live">● Live Real</button>
         <button type="button" class="fx-pill" data-fx="clear-day">☀ Cerah</button>
@@ -107,12 +113,12 @@
       <!-- Kolom Kiri (Utama) -->
       <div class="col-primary">
         <!-- Kartu Hero Cuaca Saat Ini -->
-        <section class="glass-card hero-card" aria-label="Cuaca saat ini">
+        <section class="glass-card hero-card" aria-label="Current weather">
           <div class="hero-top">
             <div class="location-meta">
               <div class="location-title-row">
                 <h1 class="city-name" id="city-name">Memuat...</h1>
-                <button type="button" class="star-btn" id="fav-btn" title="Simpan ke kota favorit" aria-label="Simpan ke favorit" aria-pressed="false">
+                <button type="button" class="star-btn" id="fav-btn" title="Simpan ke kota favorit" aria-label="Toggle favorite city" aria-pressed="false">
                   <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
                     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                   </svg>
@@ -137,12 +143,12 @@
 
             <div class="condition-cluster">
               <div class="condition-label" id="hero-condition">Memuat cuaca...</div>
-              <div class="condition-hi-lo" id="hero-hilo">Terasa --° · Tertinggi --° · Terendah --°</div>
+              <div class="condition-hi-lo" id="hero-hilo">--</div>
               <div class="hero-mini-pills">
-                <span class="mini-stat" title="Peluang hujan jam ini">💧 <strong id="pill-rain">--%</strong></span>
-                <span class="mini-stat" title="Kelembapan udara">💦 <strong id="pill-hum">--%</strong></span>
-                <span class="mini-stat" title="Kecepatan angin">💨 <strong id="pill-wind">--</strong></span>
-                <span class="mini-stat" title="Indeks UV">☀ UV <strong id="pill-uv">--</strong></span>
+                <span class="mini-stat">💧 <strong id="pill-rain">--%</strong></span>
+                <span class="mini-stat">💦 <strong id="pill-hum">--%</strong></span>
+                <span class="mini-stat">💨 <strong id="pill-wind">--</strong></span>
+                <span class="mini-stat">☀ UV <strong id="pill-uv">--</strong></span>
               </div>
             </div>
           </div>
@@ -154,31 +160,31 @@
         </section>
 
         <!-- Kartu Prakiraan 24 Jam Interaktif -->
-        <section class="glass-card hourly-card" aria-label="Prakiraan 24 jam interaktif">
+        <section class="glass-card hourly-card" aria-label="24-hour interactive forecast">
           <div class="card-header">
             <div>
-              <h2 class="card-title">Prakiraan 24 Jam</h2>
-              <p class="card-subtitle">Geser atau arahkan kursor pada grafik untuk inspeksi per jam</p>
+              <h2 class="card-title" data-i18n="hourlyTitle">Prakiraan 24 Jam</h2>
+              <p class="card-subtitle" data-i18n="hourlySubtitle">Geser atau arahkan kursor pada grafik untuk inspeksi per jam</p>
             </div>
-            <div class="metric-tabs" role="tablist" aria-label="Metrik grafik per jam">
-              <button type="button" class="tab-btn active" role="tab" aria-selected="true" data-metric="temp">Suhu</button>
-              <button type="button" class="tab-btn" role="tab" aria-selected="false" data-metric="precip">Hujan</button>
-              <button type="button" class="tab-btn" role="tab" aria-selected="false" data-metric="wind">Angin</button>
-              <button type="button" class="tab-btn" role="tab" aria-selected="false" data-metric="uv">UV</button>
+            <div class="metric-tabs" role="tablist" aria-label="Hourly chart metric">
+              <button type="button" class="tab-btn active" role="tab" aria-selected="true" data-metric="temp" data-i18n="tabTemp">Suhu</button>
+              <button type="button" class="tab-btn" role="tab" aria-selected="false" data-metric="precip" data-i18n="tabPrecip">Hujan</button>
+              <button type="button" class="tab-btn" role="tab" aria-selected="false" data-metric="wind" data-i18n="tabWind">Angin</button>
+              <button type="button" class="tab-btn" role="tab" aria-selected="false" data-metric="uv" data-i18n="tabUv">UV</button>
             </div>
           </div>
 
           <div id="hourly-chart-container" class="chart-stage"></div>
 
-          <div class="hourly-strip" id="hourly-strip" aria-label="Daftar kartu per jam"></div>
+          <div class="hourly-strip" id="hourly-strip" aria-label="Hourly forecast strip"></div>
         </section>
 
         <!-- Grid Telemetri Atmosfer (6 Kartu Bento) -->
-        <section class="telemetry-grid" aria-label="Detail telemetri atmosfer">
+        <section class="telemetry-grid" aria-label="Atmospheric telemetry details">
           <!-- 1. Kompas Angin -->
           <article class="glass-card metric-card">
             <div class="metric-head">
-              <span class="metric-label">Angin & Arah</span>
+              <span class="metric-label" data-i18n="cardWind">Angin & Arah</span>
               <span class="metric-badge" id="wind-beaufort">--</span>
             </div>
             <div id="wind-compass-box"></div>
@@ -187,7 +193,7 @@
           <!-- 2. Lintasan Matahari -->
           <article class="glass-card metric-card">
             <div class="metric-head">
-              <span class="metric-label">Lintasan Matahari</span>
+              <span class="metric-label" data-i18n="cardSun">Lintasan Matahari</span>
               <span class="metric-badge" id="sun-phase-badge">--</span>
             </div>
             <div id="sun-arc-box"></div>
@@ -196,7 +202,7 @@
           <!-- 3. Kualitas Udara (AQI Real-Time) -->
           <article class="glass-card metric-card">
             <div class="metric-head">
-              <span class="metric-label">Kualitas Udara (AQI)</span>
+              <span class="metric-label" data-i18n="cardAqi">Kualitas Udara (AQI)</span>
               <span class="metric-badge" id="aqi-badge">--</span>
             </div>
             <div class="aqi-body">
@@ -212,38 +218,38 @@
                 <span>PM10 <strong id="pm10-val">--</strong></span>
                 <span>O₃ <strong id="o3-val">--</strong></span>
               </div>
-              <p class="metric-tip" id="aqi-tip">Memuat sensor kualitas udara...</p>
+              <p class="metric-tip" id="aqi-tip">--</p>
             </div>
           </article>
 
           <!-- 4. Indeks UV -->
           <article class="glass-card metric-card">
             <div class="metric-head">
-              <span class="metric-label">Indeks UV</span>
+              <span class="metric-label" data-i18n="cardUv">Indeks UV</span>
               <span class="metric-badge" id="uv-badge">--</span>
             </div>
             <div class="uv-body">
               <div class="metric-big-row">
                 <span class="metric-big" id="uv-value">--</span>
-                <span class="metric-unit-sm" id="uv-max-label">Maks --</span>
+                <span class="metric-unit-sm" id="uv-max-label">--</span>
               </div>
               <div class="gauge-bar uv-bar">
                 <div class="gauge-marker" id="uv-marker" style="left: 5%"></div>
               </div>
-              <p class="metric-tip" id="uv-tip">Memuat radiasi ultraviolet...</p>
+              <p class="metric-tip" id="uv-tip">--</p>
             </div>
           </article>
 
           <!-- 5. Kelembapan & Titik Embun -->
           <article class="glass-card metric-card">
             <div class="metric-head">
-              <span class="metric-label">Kelembapan</span>
+              <span class="metric-label" data-i18n="cardHumidity">Kelembapan</span>
               <span class="metric-badge" id="hum-badge">--</span>
             </div>
             <div class="hum-body">
               <div class="metric-big-row">
                 <span class="metric-big" id="hum-value">--%</span>
-                <span class="metric-unit-sm" id="dew-label">Embun --°</span>
+                <span class="metric-unit-sm" id="dew-label">--</span>
               </div>
               <div class="progress-track">
                 <div class="progress-fill hum-fill" id="hum-fill" style="width: 0%"></div>
@@ -255,22 +261,22 @@
           <!-- 6. Tekanan & Jarak Pandang -->
           <article class="glass-card metric-card">
             <div class="metric-head">
-              <span class="metric-label">Tekanan & Visibilitas</span>
+              <span class="metric-label" data-i18n="cardPressure">Tekanan & Visibilitas</span>
               <span class="metric-badge" id="pressure-badge">--</span>
             </div>
             <div class="dual-stat-body">
               <div class="dual-item">
-                <span class="dual-label">Barometer</span>
+                <span class="dual-label" data-i18n="barometer">Barometer</span>
                 <strong class="dual-val" id="pressure-val">-- hPa</strong>
               </div>
               <div class="dual-divider"></div>
               <div class="dual-item">
-                <span class="dual-label">Jarak Pandang</span>
+                <span class="dual-label" data-i18n="visibility">Jarak Pandang</span>
                 <strong class="dual-val" id="visibility-val">-- km</strong>
               </div>
               <div class="dual-divider"></div>
               <div class="dual-item">
-                <span class="dual-label">Tutupan Awan</span>
+                <span class="dual-label" data-i18n="cloudCover">Tutupan Awan</span>
                 <strong class="dual-val" id="cloud-val">--%</strong>
               </div>
             </div>
@@ -281,41 +287,41 @@
       <!-- Kolom Kanan (Sidebar) -->
       <aside class="col-secondary">
         <!-- Prakiraan 7 Hari -->
-        <section class="glass-card daily-card" aria-label="Prakiraan 7 hari">
+        <section class="glass-card daily-card" aria-label="7-day forecast">
           <div class="card-header">
             <div>
-              <h2 class="card-title">Prakiraan 7 Hari</h2>
-              <p class="card-subtitle">Klik hari untuk melihat detail lengkap</p>
+              <h2 class="card-title" data-i18n="dailyTitle">Prakiraan 7 Hari</h2>
+              <p class="card-subtitle" data-i18n="dailySubtitle">Klik hari untuk melihat detail lengkap</p>
             </div>
           </div>
           <div class="daily-list" id="daily-list"></div>
         </section>
 
         <!-- Kartu Metadata & Telemetri Stasiun -->
-        <section class="glass-card meta-card" aria-label="Informasi sumber data">
+        <section class="glass-card meta-card" aria-label="Station metadata">
           <div class="card-header">
-            <h2 class="card-title">Stasiun & Sumber Data</h2>
+            <h2 class="card-title" data-i18n="stationTitle">Stasiun & Sumber Data</h2>
           </div>
           <dl class="station-dl">
             <div>
-              <dt>Koordinat</dt>
+              <dt data-i18n="metaCoords">Koordinat</dt>
               <dd id="meta-coords">--</dd>
             </div>
             <div>
-              <dt>Elevasi</dt>
+              <dt data-i18n="metaElev">Elevasi</dt>
               <dd id="meta-elev">--</dd>
             </div>
             <div>
-              <dt>Zona Waktu</dt>
+              <dt data-i18n="metaTz">Zona Waktu</dt>
               <dd id="meta-tz">--</dd>
             </div>
             <div>
-              <dt>Pembaruan Terakhir</dt>
+              <dt data-i18n="metaUpdated">Pembaruan Terakhir</dt>
               <dd id="meta-updated">--</dd>
             </div>
           </dl>
           <p class="api-credit">
-            Data meteorologi & kualitas udara real-time ditenagai oleh
+            <span data-i18n="apiCreditPrefix">Data meteorologi & kualitas udara real-time ditenagai oleh</span>
             <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo API</a>.
           </p>
         </section>

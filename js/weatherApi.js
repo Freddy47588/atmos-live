@@ -6,6 +6,8 @@
  * - Geocoding API (pencarian kota seluruh dunia)
  */
 
+import { t } from './i18n.js';
+
 const FORECAST_ENDPOINT = 'https://api.open-meteo.com/v1/forecast';
 const AQI_ENDPOINT = 'https://air-quality-api.open-meteo.com/v1/air-quality';
 const GEOCODING_ENDPOINT = 'https://geocoding-api.open-meteo.com/v1/search';
@@ -20,50 +22,56 @@ export const PRESET_CITIES = [
 ];
 
 /**
- * Mapping WMO Weather Interpretation Codes ke Bahasa Indonesia + kategori animasi
+ * Mapping WMO Weather Interpretation Codes ke Bahasa Indonesia / English + kategori animasi
  */
-export function interpretWmoCode(code, isDay = 1) {
-  const map = {
-    0: { label: isDay ? 'Cerah' : 'Cerah Berbintang', short: 'Cerah', scene: 'clear', icon: isDay ? 'clear-day' : 'clear-night', intensity: 0 },
-    1: { label: isDay ? 'Cerah Berawan Tipis' : 'Sebagian Cerah', short: 'Cerah Berawan', scene: 'partly-cloudy', icon: isDay ? 'partly-cloudy-day' : 'partly-cloudy-night', intensity: 0.25 },
-    2: { label: 'Berawan Sebagian', short: 'Berawan', scene: 'partly-cloudy', icon: isDay ? 'partly-cloudy-day' : 'partly-cloudy-night', intensity: 0.55 },
-    3: { label: 'Mendung Tebal', short: 'Mendung', scene: 'overcast', icon: 'cloudy', intensity: 0.9 },
-    45: { label: 'Berkabut', short: 'Kabut', scene: 'fog', icon: 'fog', intensity: 0.7 },
-    48: { label: 'Kabut Embun Beku', short: 'Kabut Tebal', scene: 'fog', icon: 'fog', intensity: 1.0 },
-    51: { label: 'Gerimis Ringan', short: 'Gerimis', scene: 'rain', icon: 'drizzle', intensity: 0.3 },
-    53: { label: 'Gerimis Sedang', short: 'Gerimis', scene: 'rain', icon: 'drizzle', intensity: 0.45 },
-    55: { label: 'Gerimis Lebat', short: 'Gerimis Lebat', scene: 'rain', icon: 'rain', intensity: 0.6 },
-    56: { label: 'Gerimis Beku Ringan', short: 'Gerimis Beku', scene: 'rain', icon: 'drizzle', intensity: 0.4 },
-    57: { label: 'Gerimis Beku Lebat', short: 'Gerimis Beku', scene: 'rain', icon: 'rain', intensity: 0.65 },
-    61: { label: 'Hujan Ringan', short: 'Hujan Ringan', scene: 'rain', icon: 'rain', intensity: 0.5 },
-    63: { label: 'Hujan Sedang', short: 'Hujan', scene: 'rain', icon: 'rain', intensity: 0.75 },
-    65: { label: 'Hujan Lebat', short: 'Hujan Lebat', scene: 'rain', icon: 'heavy-rain', intensity: 1.0 },
-    66: { label: 'Hujan Beku Ringan', short: 'Hujan Beku', scene: 'rain', icon: 'rain', intensity: 0.6 },
-    67: { label: 'Hujan Beku Lebat', short: 'Hujan Beku', scene: 'rain', icon: 'heavy-rain', intensity: 0.9 },
-    71: { label: 'Salju Ringan', short: 'Salju Ringan', scene: 'snow', icon: 'snow', intensity: 0.45 },
-    73: { label: 'Salju Sedang', short: 'Salju', scene: 'snow', icon: 'snow', intensity: 0.75 },
-    75: { label: 'Badai Salju Lebat', short: 'Salju Lebat', scene: 'snow', icon: 'snow', intensity: 1.0 },
-    77: { label: 'Butiran Salju', short: 'Salju Halus', scene: 'snow', icon: 'snow', intensity: 0.55 },
-    80: { label: 'Hujan Lokal Ringan', short: 'Hujan Lokal', scene: 'rain', icon: 'rain', intensity: 0.55 },
-    81: { label: 'Hujan Lokal Sedang', short: 'Hujan Deras', scene: 'rain', icon: 'rain', intensity: 0.8 },
-    82: { label: 'Hujan Lokal Sangat Lebat', short: 'Hujan Badai', scene: 'rain', icon: 'heavy-rain', intensity: 1.0 },
-    85: { label: 'Hujan Salju Ringan', short: 'Hujan Salju', scene: 'snow', icon: 'snow', intensity: 0.65 },
-    86: { label: 'Hujan Salju Lebat', short: 'Salju Deras', scene: 'snow', icon: 'snow', intensity: 0.95 },
-    95: { label: 'Badai Petir', short: 'Badai Petir', scene: 'storm', icon: 'storm', intensity: 0.85 },
-    96: { label: 'Badai Petir & Hujan Es', short: 'Badai Es', scene: 'storm', icon: 'storm', intensity: 0.95 },
-    99: { label: 'Badai Petir Sangat Ekstrem', short: 'Badai Ekstrem', scene: 'storm', icon: 'storm', intensity: 1.0 },
+export function interpretWmoCode(code, isDay = 1, lang = 'id') {
+  const dict = t(lang);
+  const textEntry = dict.wmo[code] || dict.wmo[2];
+  const label = isDay ? textEntry.day : textEntry.night;
+  const short = textEntry.short;
+
+  const sceneMap = {
+    0: { scene: 'clear', icon: isDay ? 'clear-day' : 'clear-night', intensity: 0 },
+    1: { scene: 'partly-cloudy', icon: isDay ? 'partly-cloudy-day' : 'partly-cloudy-night', intensity: 0.25 },
+    2: { scene: 'partly-cloudy', icon: isDay ? 'partly-cloudy-day' : 'partly-cloudy-night', intensity: 0.55 },
+    3: { scene: 'overcast', icon: 'cloudy', intensity: 0.9 },
+    45: { scene: 'fog', icon: 'fog', intensity: 0.7 },
+    48: { scene: 'fog', icon: 'fog', intensity: 1.0 },
+    51: { scene: 'rain', icon: 'drizzle', intensity: 0.3 },
+    53: { scene: 'rain', icon: 'drizzle', intensity: 0.45 },
+    55: { scene: 'rain', icon: 'rain', intensity: 0.6 },
+    56: { scene: 'rain', icon: 'drizzle', intensity: 0.4 },
+    57: { scene: 'rain', icon: 'rain', intensity: 0.65 },
+    61: { scene: 'rain', icon: 'rain', intensity: 0.5 },
+    63: { scene: 'rain', icon: 'rain', intensity: 0.75 },
+    65: { scene: 'rain', icon: 'heavy-rain', intensity: 1.0 },
+    66: { scene: 'rain', icon: 'rain', intensity: 0.6 },
+    67: { scene: 'rain', icon: 'heavy-rain', intensity: 0.9 },
+    71: { scene: 'snow', icon: 'snow', intensity: 0.45 },
+    73: { scene: 'snow', icon: 'snow', intensity: 0.75 },
+    75: { scene: 'snow', icon: 'snow', intensity: 1.0 },
+    77: { scene: 'snow', icon: 'snow', intensity: 0.55 },
+    80: { scene: 'rain', icon: 'rain', intensity: 0.55 },
+    81: { scene: 'rain', icon: 'rain', intensity: 0.8 },
+    82: { scene: 'rain', icon: 'heavy-rain', intensity: 1.0 },
+    85: { scene: 'snow', icon: 'snow', intensity: 0.65 },
+    86: { scene: 'snow', icon: 'snow', intensity: 0.95 },
+    95: { scene: 'storm', icon: 'storm', intensity: 0.85 },
+    96: { scene: 'storm', icon: 'storm', intensity: 0.95 },
+    99: { scene: 'storm', icon: 'storm', intensity: 1.0 },
   };
-  return map[code] || { label: 'Berawan', short: 'Berawan', scene: 'partly-cloudy', icon: 'cloudy', intensity: 0.5 };
+  const base = sceneMap[code] || { scene: 'partly-cloudy', icon: 'cloudy', intensity: 0.5 };
+  return { label, short, ...base };
 }
 
 /**
  * Cari kota menggunakan Open-Meteo Geocoding API
  */
-export async function searchCities(query, signal) {
+export async function searchCities(query, signal, lang = 'id') {
   if (!query || query.trim().length < 2) return [];
-  const url = `${GEOCODING_ENDPOINT}?name=${encodeURIComponent(query.trim())}&count=7&language=id&format=json`;
+  const url = `${GEOCODING_ENDPOINT}?name=${encodeURIComponent(query.trim())}&count=7&language=${lang}&format=json`;
   const res = await fetch(url, { signal });
-  if (!res.ok) throw new Error('Gagal mencari lokasi');
+  if (!res.ok) throw new Error('Geocoding failed');
   const data = await res.json();
   return (data.results || []).map((item) => ({
     name: item.name,
@@ -78,14 +86,14 @@ export async function searchCities(query, signal) {
 /**
  * Reverse geocode ringan memakai BigDataCloud free client API untuk GPS user
  */
-export async function reverseGeocode(lat, lon) {
+export async function reverseGeocode(lat, lon, lang = 'id') {
   try {
     const res = await fetch(
-      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=id`
+      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=${lang}`
     );
     if (!res.ok) throw new Error('Reverse geocode failed');
     const data = await res.json();
-    const city = data.city || data.locality || data.principalSubdivision || 'Lokasi Anda';
+    const city = data.city || data.locality || data.principalSubdivision || (lang === 'en' ? 'Your Location' : 'Lokasi Anda');
     return {
       name: city,
       admin1: data.principalSubdivision || '',
@@ -98,7 +106,7 @@ export async function reverseGeocode(lat, lon) {
   } catch {
     return {
       name: `${lat.toFixed(2)}°, ${lon.toFixed(2)}°`,
-      admin1: 'Koordinat GPS',
+      admin1: lang === 'en' ? 'GPS Coordinates' : 'Koordinat GPS',
       country: '',
       country_code: '',
       latitude: lat,
@@ -366,50 +374,46 @@ function computeTimePhase(curTime, sunrise, sunset, isDay) {
   return 'day';
 }
 
-export function getWindDirectionLabel(deg) {
-  const dirs = ['U', 'TL', 'T', 'TG', 'S', 'BD', 'B', 'BL'];
-  return dirs[Math.round(((deg % 360) / 45)) % 8];
+export function getWindDirectionLabel(deg, lang = 'id') {
+  const dirs = t(lang).cardinals8;
+  return dirs[Math.round((deg % 360) / 45) % 8];
 }
 
-export function getBeaufortLabel(kmh) {
-  if (kmh < 2) return 'Tenang';
-  if (kmh < 12) return 'Sepoi Lembut';
-  if (kmh < 20) return 'Sepoi Segar';
-  if (kmh < 30) return 'Angin Sedang';
-  if (kmh < 40) return 'Angin Kencang';
-  if (kmh < 62) return 'Sangat Kencang';
-  return 'Badai Angin';
+export function getBeaufortLabel(kmh, lang = 'id') {
+  const b = t(lang).beaufort;
+  if (kmh < 2) return b[0];
+  if (kmh < 12) return b[1];
+  if (kmh < 20) return b[2];
+  if (kmh < 30) return b[3];
+  if (kmh < 40) return b[4];
+  if (kmh < 62) return b[5];
+  return b[6];
 }
 
-export function getAqiInfo(usAqi) {
-  if (usAqi <= 50) return { label: 'Baik', color: '#34d399', tip: 'Udara bersih, ideal untuk olahraga luar ruangan.' };
-  if (usAqi <= 100) return { label: 'Sedang', color: '#fbbf24', tip: 'Kualitas udara cukup baik untuk mayoritas orang.' };
-  if (usAqi <= 150) return { label: 'Sensitif', color: '#fb923c', tip: 'Kelompok sensitif sebaiknya kurangi aktivitas berat di luar.' };
-  if (usAqi <= 200) return { label: 'Tidak Sehat', color: '#f87171', tip: 'Gunakan masker saat beraktivitas di luar ruangan.' };
-  return { label: 'Berbahaya', color: '#c084fc', tip: 'Hindari aktivitas luar ruangan jika memungkinkan.' };
+export function getAqiInfo(usAqi, lang = 'id') {
+  const levels = t(lang).aqiLevels;
+  return levels.find((l) => usAqi <= l.max) || levels[levels.length - 1];
 }
 
-export function getUvInfo(uv) {
-  if (uv < 3) return { label: 'Rendah', color: '#34d399', tip: 'Aman di luar ruangan tanpa perlindungan khusus.' };
-  if (uv < 6) return { label: 'Sedang', color: '#fbbf24', tip: 'Gunakan kacamata hitam & sunscreen SPF 30+.' };
-  if (uv < 8) return { label: 'Tinggi', color: '#fb923c', tip: 'Kurangi paparan langsung pukul 11.00–15.00.' };
-  if (uv < 11) return { label: 'Sangat Tinggi', color: '#f87171', tip: 'Wajib tabir surya, topi, dan cari tempat teduh.' };
-  return { label: 'Ekstrem', color: '#c084fc', tip: 'Hindari paparan sinar matahari langsung.' };
+export function getUvInfo(uv, lang = 'id') {
+  const levels = t(lang).uvLevels;
+  return levels.find((l) => uv < l.max) || levels[levels.length - 1];
 }
 
-export function getSmartInsight(current, aqi) {
+export function getSmartInsight(current, aqi, lang = 'id') {
+  const ins = t(lang).insights;
   const { temp, meta, precipProb, uv, windSpeed, humidity } = current;
-  if (meta.scene === 'storm') return 'Waspada badai petir aktif — hindari area terbuka & siapkan payung tahan angin.';
-  if (meta.scene === 'rain' || precipProb >= 65) return 'Bawa payung atau jas hujan hari ini — curah hujan terdeteksi cukup tinggi.';
-  if (meta.scene === 'snow') return 'Kenakan jaket tebal berlapis & alas kaki anti-slip untuk kondisi bersalju.';
-  if (meta.scene === 'fog') return 'Jarak pandang terbatas akibat kabut — nyalakan lampu kabut saat berkendara.';
-  if (aqi && aqi.usAqi > 130) return `Kualitas udara kurang baik (AQI ${Math.round(aqi.usAqi)}) — pertimbangkan memakai masker.`;
-  if (uv >= 7) return `Indeks UV tinggi (${uv.toFixed(1)}) — gunakan sunscreen & tetap terhidrasi saat di luar.`;
-  if (temp >= 33) return 'Cuaca cukup terik — pakai pakaian katun ringan dan perbanyak minum air.';
-  if (temp <= 17) return 'Udara terasa sejuk dingin — siapkan jaket ringan atau sweater nyaman.';
-  if (windSpeed >= 30) return 'Hembusan angin cukup kencang — cocok untuk aktivitas indoor atau gunakan jaket windbreaker.';
-  if (humidity >= 85) return 'Kelembapan udara tinggi membuat suasana terasa lebih gerah dari suhu aktual.';
-  return 'Kondisi atmosfer bersahabat — waktu yang pas untuk aktivitas di luar ruangan.';
+  if (meta.scene === 'storm') return ins.storm;
+  if (meta.scene === 'rain' || precipProb >= 65) return ins.rain;
+  if (meta.scene === 'snow') return ins.snow;
+  if (meta.scene === 'fog') return ins.fog;
+  if (aqi && aqi.usAqi > 130) return ins.aqi(Math.round(aqi.usAqi));
+  if (uv >= 7) return ins.uv(uv.toFixed(1));
+  if (temp >= 33) return ins.hot;
+  if (temp <= 17) return ins.cold;
+  if (windSpeed >= 30) return ins.windy;
+  if (humidity >= 85) return ins.humid;
+  return ins.good;
 }
 
 export function countryCodeToFlag(cc) {

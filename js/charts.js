@@ -8,6 +8,7 @@
 
 import { interpretWmoCode, getWindDirectionLabel } from './weatherApi.js';
 import { getWeatherIconSvg } from './icons.js';
+import { t } from './i18n.js';
 
 function smoothPath(points) {
   if (points.length < 2) return '';
@@ -31,9 +32,10 @@ function smoothPath(points) {
 /**
  * Render grafik 24 jam dengan interaksi pointer scrub/hover
  */
-export function renderHourlyChart(container, hourly, { metric = 'temp', unit = 'C', windUnit = 'kmh', activeIdx = 0, onSelect }) {
+export function renderHourlyChart(container, hourly, { metric = 'temp', unit = 'C', windUnit = 'kmh', lang = 'id', activeIdx = 0, onSelect }) {
+  const dict = t(lang);
   if (!hourly || !hourly.length) {
-    container.innerHTML = '<div class="chart-empty">Data per jam tidak tersedia</div>';
+    container.innerHTML = `<div class="chart-empty">${dict.chartEmpty}</div>`;
     return;
   }
 
@@ -46,6 +48,9 @@ export function renderHourlyChart(container, hourly, { metric = 'temp', unit = '
   const plotW = W - padL - padR;
   const plotH = H - padT - padB;
 
+  const windUnitTxt = windUnit === 'ms' ? dict.windUnitMs : dict.windUnitKmh;
+  const getHourLabel = (item, idx) => (idx === 0 ? dict.nowLabel : item.time.slice(11, 16));
+
   const getValue = (item) => {
     if (metric === 'temp') return unit === 'F' ? (item.temp * 9) / 5 + 32 : item.temp;
     if (metric === 'precip') return item.precipProb;
@@ -57,7 +62,7 @@ export function renderHourlyChart(container, hourly, { metric = 'temp', unit = '
   const formatVal = (val) => {
     if (metric === 'temp') return `${Math.round(val)}°`;
     if (metric === 'precip') return `${Math.round(val)}%`;
-    if (metric === 'wind') return `${val.toFixed(windUnit === 'ms' ? 1 : 0)} ${windUnit === 'ms' ? 'm/s' : 'km/j'}`;
+    if (metric === 'wind') return `${val.toFixed(windUnit === 'ms' ? 1 : 0)} ${windUnitTxt}`;
     if (metric === 'uv') return `UV ${val.toFixed(1)}`;
     return `${val}`;
   };
@@ -109,7 +114,7 @@ export function renderHourlyChart(container, hourly, { metric = 'temp', unit = '
     .filter((_, i) => i % 3 === 0 || i === points.length - 1)
     .map(
       (p) => `
-      <text x="${p.x.toFixed(1)}" y="${H - 12}" text-anchor="middle" class="chart-axis-label">${p.item.hourLabel}</text>
+      <text x="${p.x.toFixed(1)}" y="${H - 12}" text-anchor="middle" class="chart-axis-label">${getHourLabel(p.item, p.idx)}</text>
       <text x="${p.x.toFixed(1)}" y="${(p.y - 10).toFixed(1)}" text-anchor="middle" class="chart-point-label">${metric === 'wind' ? Math.round(p.val) : formatVal(p.val)}</text>
     `
     )
@@ -167,16 +172,16 @@ export function renderHourlyChart(container, hourly, { metric = 'temp', unit = '
     scrubDot.setAttribute('cx', p.x.toFixed(1));
     scrubDot.setAttribute('cy', p.y.toFixed(1));
 
-    const meta = interpretWmoCode(p.item.code, p.item.isDay);
+    const meta = interpretWmoCode(p.item.code, p.item.isDay, lang);
     const tempTxt = `${Math.round(unit === 'F' ? (p.item.temp * 9) / 5 + 32 : p.item.temp)}°${unit}`;
-    const windTxt = `${(windUnit === 'ms' ? p.item.windSpeed / 3.6 : p.item.windSpeed).toFixed(windUnit === 'ms' ? 1 : 0)} ${windUnit === 'ms' ? 'm/s' : 'km/j'}`;
+    const windTxt = `${(windUnit === 'ms' ? p.item.windSpeed / 3.6 : p.item.windSpeed).toFixed(windUnit === 'ms' ? 1 : 0)} ${windUnitTxt}`;
 
     readout.innerHTML = `
       <div class="scrub-chip">
         <span class="scrub-icon">${getWeatherIconSvg(meta.icon, 26)}</span>
-        <span class="scrub-time">${p.item.hourLabel}</span>
+        <span class="scrub-time">${getHourLabel(p.item, p.idx)}</span>
         <strong class="scrub-main">${formatVal(p.val)}</strong>
-        <span class="scrub-meta">${meta.short} · Suhu ${tempTxt} · Hujan ${p.item.precipProb}% · Angin ${windTxt}</span>
+        <span class="scrub-meta">${meta.short} · ${dict.tabTemp} ${tempTxt} · ${dict.tabPrecip} ${p.item.precipProb}% · ${dict.tabWind} ${windTxt}</span>
       </div>
     `;
 
@@ -216,7 +221,8 @@ export function renderHourlyChart(container, hourly, { metric = 'temp', unit = '
 /**
  * Render lintasan matahari (Sun Arc) berdasarkan sunrise & sunset lokal real-time
  */
-export function renderSunArc(container, currentIso, sunriseIso, sunsetIso) {
+export function renderSunArc(container, currentIso, sunriseIso, sunsetIso, lang = 'id') {
+  const dict = t(lang);
   const toMin = (iso) => {
     if (!iso || iso.length < 16) return 0;
     return parseInt(iso.slice(11, 13), 10) * 60 + parseInt(iso.slice(14, 16), 10);
@@ -231,9 +237,9 @@ export function renderSunArc(container, currentIso, sunriseIso, sunsetIso) {
   const isDaylight = rawProgress >= 0 && rawProgress <= 1;
 
   // Kurva kuadratik Bezier: P0(20, 96), P1(140, -10), P2(260, 96)
-  const t = clamped;
-  const x = (1 - t) * (1 - t) * 20 + 2 * (1 - t) * t * 140 + t * t * 260;
-  const y = (1 - t) * (1 - t) * 96 + 2 * (1 - t) * t * -10 + t * t * 96;
+  const tt = clamped;
+  const x = (1 - tt) * (1 - tt) * 20 + 2 * (1 - tt) * tt * 140 + tt * tt * 260;
+  const y = (1 - tt) * (1 - tt) * 96 + 2 * (1 - tt) * tt * -10 + tt * tt * 96;
 
   const riseLabel = sunriseIso ? sunriseIso.slice(11, 16) : '--:--';
   const setLabel = sunsetIso ? sunsetIso.slice(11, 16) : '--:--';
@@ -244,16 +250,16 @@ export function renderSunArc(container, currentIso, sunriseIso, sunsetIso) {
   let statusText = '';
   if (rawProgress < 0) {
     const diff = riseM - nowM;
-    statusText = `Terbit dalam ${Math.floor(diff / 60)}j ${diff % 60}m`;
+    statusText = dict.risesIn(Math.floor(diff / 60), diff % 60);
   } else if (rawProgress <= 1) {
     const rem = setM - nowM;
-    statusText = `Terbenam dalam ${Math.floor(rem / 60)}j ${rem % 60}m`;
+    statusText = dict.setsIn(Math.floor(rem / 60), rem % 60);
   } else {
-    statusText = 'Matahari telah terbenam';
+    statusText = dict.sunHasSet;
   }
 
   container.innerHTML = `
-    <svg viewBox="0 0 280 118" class="sun-arc-svg" role="img" aria-label="Lintasan matahari harian">
+    <svg viewBox="0 0 280 118" class="sun-arc-svg" role="img" aria-label="${dict.cardSun}">
       <defs>
         <linearGradient id="sunArcStroke" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stop-color="#fb923c"/>
@@ -279,7 +285,7 @@ export function renderSunArc(container, currentIso, sunriseIso, sunsetIso) {
       `
       }
       <text x="20" y="113" text-anchor="start" class="arc-time-label">↑ ${riseLabel}</text>
-      <text x="140" y="113" text-anchor="middle" class="arc-dur-label">${daylightHrs}j ${daylightMins}m siang</text>
+      <text x="140" y="113" text-anchor="middle" class="arc-dur-label">${dict.daylightFmt(daylightHrs, daylightMins)}</text>
       <text x="260" y="113" text-anchor="end" class="arc-time-label">↓ ${setLabel}</text>
     </svg>
     <div class="sun-arc-caption">${statusText}</div>
@@ -289,21 +295,23 @@ export function renderSunArc(container, currentIso, sunriseIso, sunsetIso) {
 /**
  * Render Kompas Angin SVG interaktif
  */
-export function renderWindCompass(container, speedKmh, dirDeg, gustsKmh, windUnit = 'kmh') {
+export function renderWindCompass(container, speedKmh, dirDeg, gustsKmh, windUnit = 'kmh', lang = 'id') {
+  const dict = t(lang);
   const val = windUnit === 'ms' ? (speedKmh / 3.6).toFixed(1) : Math.round(speedKmh);
   const gustVal = windUnit === 'ms' ? (gustsKmh / 3.6).toFixed(1) : Math.round(gustsKmh);
-  const unitLabel = windUnit === 'ms' ? 'm/s' : 'km/j';
-  const dirLabel = getWindDirectionLabel(dirDeg);
+  const unitLabel = windUnit === 'ms' ? dict.windUnitMs : dict.windUnitKmh;
+  const dirLabel = getWindDirectionLabel(dirDeg, lang);
+  const [cN, cE, cS, cW] = dict.cardinals4;
 
   container.innerHTML = `
     <div class="compass-layout">
-      <svg viewBox="0 0 120 120" class="compass-svg" role="img" aria-label="Kompas arah angin ${dirDeg} derajat">
+      <svg viewBox="0 0 120 120" class="compass-svg" role="img" aria-label="${dict.cardWind} ${dirDeg}°">
         <circle cx="60" cy="60" r="52" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.16)" stroke-width="1.5"/>
         <circle cx="60" cy="60" r="44" fill="none" stroke="rgba(255,255,255,0.1)" stroke-dasharray="2 6" stroke-width="3"/>
-        <text x="60" y="19" text-anchor="middle" class="compass-cardinal">U</text>
-        <text x="103" y="64" text-anchor="middle" class="compass-cardinal">T</text>
-        <text x="60" y="109" text-anchor="middle" class="compass-cardinal">S</text>
-        <text x="17" y="64" text-anchor="middle" class="compass-cardinal">B</text>
+        <text x="60" y="19" text-anchor="middle" class="compass-cardinal">${cN}</text>
+        <text x="103" y="64" text-anchor="middle" class="compass-cardinal">${cE}</text>
+        <text x="60" y="109" text-anchor="middle" class="compass-cardinal">${cS}</text>
+        <text x="17" y="64" text-anchor="middle" class="compass-cardinal">${cW}</text>
         <g class="compass-needle" style="transform: rotate(${Math.round(dirDeg)}deg); transform-origin: 60px 60px;">
           <polygon points="60,24 65,60 60,54 55,60" fill="#38bdf8"/>
           <polygon points="60,94 64,60 60,65 56,60" fill="rgba(255,255,255,0.35)"/>
@@ -312,8 +320,8 @@ export function renderWindCompass(container, speedKmh, dirDeg, gustsKmh, windUni
       </svg>
       <div class="compass-stats">
         <div class="compass-big">${val} <small>${unitLabel}</small></div>
-        <div class="compass-sub">Arah <strong>${dirLabel}</strong> (${Math.round(dirDeg)}°)</div>
-        <div class="compass-sub">Hembusan <strong>${gustVal} ${unitLabel}</strong></div>
+        <div class="compass-sub">${dict.windDirLabel} <strong>${dirLabel}</strong> (${Math.round(dirDeg)}°)</div>
+        <div class="compass-sub">${dict.windGustsLabel} <strong>${gustVal} ${unitLabel}</strong></div>
       </div>
     </div>
   `;

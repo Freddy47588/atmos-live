@@ -4,9 +4,9 @@
 
 <br />
 
-# ⛅ ATMOS — Observatorium Cuaca Interaktif Real-Time
+# ⛅ ATMOS — Interactive Real-Time Weather Observatory
 
-**Website cuaca interaktif modern dengan animasi langit 60fps, suara atmosfer prosedural, deteksi lokasi otomatis, dan data meteorologi & kualitas udara real-time — 100% tanpa API key dan tanpa *build step*.**
+**A modern, zero-dependency interactive weather web app powered by a 60fps HTML5 Canvas sky engine, procedural Web Audio weather ambience, automatic user geolocation, bilingual `ID / EN` support, and 100% live meteorological & air-quality data — no API keys or build step required.**
 
 <p>
   <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white" alt="HTML5" />
@@ -14,124 +14,127 @@
   <img src="https://img.shields.io/badge/JavaScript_ES6+-F7DF1E?style=for-the-badge&logo=javascript&logoColor=111827" alt="JavaScript ES6+" />
   <img src="https://img.shields.io/badge/Canvas_60fps-0EA5E9?style=for-the-badge&logo=canvas&logoColor=white" alt="HTML5 Canvas" />
   <img src="https://img.shields.io/badge/Web_Audio_API-8B5CF6?style=for-the-badge&logo=soundcloud&logoColor=white" alt="Web Audio API" />
+  <img src="https://img.shields.io/badge/i18n-EN_%7C_ID-EC4899?style=for-the-badge" alt="Bilingual EN / ID" />
   <img src="https://img.shields.io/badge/Data-Open--Meteo_Live-10B981?style=for-the-badge&logo=cloudflare&logoColor=white" alt="Open-Meteo Live API" />
   <img src="https://img.shields.io/badge/License-MIT-F59E0B?style=for-the-badge" alt="MIT License" />
 </p>
 
 <p>
-  <a href="#-fitur-unggulan">✨ Fitur</a> •
-  <a href="#-efek-animasi-langit">🎬 Efek Langit</a> •
-  <a href="#-sumber-data-real-time">🛰️ Data Real-Time</a> •
-  <a href="#-cara-menjalankan">🚀 Menjalankan</a> •
-  <a href="./docs/ARCHITECTURE.md">🏗️ Arsitektur</a>
+  <a href="#-key-features">✨ Features</a> •
+  <a href="#-sky-animation-engine">🎬 Sky FX</a> •
+  <a href="#-real-time-data-sources">🛰️ Live Data</a> •
+  <a href="#-getting-started">🚀 Quick Start</a> •
+  <a href="./docs/ARCHITECTURE.md">🏗️ Architecture</a>
 </p>
 
 </div>
 
 ---
 
-## ✨ Fitur Unggulan
+## ✨ Key Features
 
-| Ikon | Fitur | Deskripsi |
+| Icon | Feature | Description |
 | :---: | :--- | :--- |
-| 📍 | **Deteksi Lokasi Otomatis** | Otomatis menyesuaikan lokasi user saat halaman dibuka menggunakan **Browser GPS** dengan *fallback* mulus ke **deteksi lokasi IP**, ditambah tombol target GPS (`⌖`) untuk kembali kapan saja. |
-| 🎨 | **Animasi Langit 60fps** | Kanvas HTML5 *fullscreen* yang berubah dinamis mengikuti cuaca aktual dan fase waktu lokal kota (**Fajar, Siang, Senja, Malam**) lengkap dengan *pointer parallax*. |
-| ⛈️ | **Playground Efek Langit** | Coba langsung seluruh simulasi cuaca (**Cerah, Senja, Malam, Mendung, Hujan, Badai Petir, Salju, Kabut**) dari dock interaktif, lalu kembali ke **● Live Real** dalam satu klik. |
-| 📈 | **Grafik 24 Jam Interaktif** | Kurva SVG halus (*cubic Bezier*) yang bisa digeser (*hover/touch scrub*) untuk inspeksi detail **Suhu**, **Peluang Hujan**, **Kecepatan Angin**, dan **Indeks UV**. |
-| 📅 | **Prakiraan 7 Hari Expandable** | Bilah rentang suhu proporsional mingguan; klik baris hari mana saja untuk membuka detail jam terbit/terbenam, UV maks, kecepatan angin maks, dan curah hujan. |
-| 🧭 | **Telemetri Atmosfer Visual** | **Kompas Angin** beranimasi, **Lintasan Matahari (Sun Arc)** real-time, **Kualitas Udara (US AQI, PM2.5, PM10, O₃)**, **Indeks UV**, **Kelembapan & Titik Embun**, serta **Barometer & Jarak Pandang**. |
-| 🔊 | **Suara Atmosfer Prosedural** | Sintesis suara hujan, hembusan angin, dan gemuruh petir real-time menggunakan **Web Audio API** — tanpa file audio eksternal. |
-| 🌍 | **Pencarian Global & Favorit** | Pencarian kota seluruh dunia dengan *autocomplete* & navigasi keyboard, kota favorit tersimpan di `localStorage`, jam lokal kota *live ticking*, serta toggle satuan **`°C / °F`**. |
+| 📍 | **Automatic Location Detection** | Automatically adapts to the visitor's real location on load via **Browser GPS** with a seamless **IP geolocation fallback**, plus a quick GPS target button (`⌖`) to snap back anytime. |
+| 🎨 | **60fps Dynamic Sky Engine** | Full-viewport HTML5 Canvas that smoothly morphs to match both real-time weather conditions and local solar phases (**Dawn, Daylight, Golden Hour, Night**) with pointer parallax. |
+| ⛈️ | **Interactive Sky FX Playground** | Test every atmospheric effect live on screen (**Clear, Dusk, Night, Overcast, Rain, Storm, Snow, Fog**) from the floating FX dock, then return to **● Live Real** with one click. |
+| 🌐 | **Bilingual Language Toggle (`ID / EN`)** | Instant one-click switching between **English** and **Indonesian** across all labels, WMO weather descriptions, wind cardinals, AQI/UV guidance, dates, and search results, persisted in `localStorage`. |
+| 📈 | **Scrubbable 24-Hour Forecast Chart** | Smooth cubic-Bezier SVG curve supporting mouse hover & touch drag scrubbing across **Temperature**, **Rain Probability**, **Wind Speed**, and **UV Index**, bidirectionally synced with hourly cards. |
+| 📅 | **Expandable 7-Day Forecast** | Proportional weekly min–max temperature range bars; click any day to reveal full details including sunrise/sunset, max UV, max wind, and total precipitation. |
+| 🧭 | **Visual Atmospheric Telemetry** | Animated **Wind Compass**, live parabolic **Sun Trajectory (Sun Arc)**, real-time **Air Quality (US AQI, PM2.5, PM10, O₃)**, **UV Meter**, **Humidity & Dew Point**, and **Barometer & Visibility**. |
+| 🔊 | **Procedural Weather Ambience** | Real-time rain, gentle breeze, and synchronized lightning thunder synthesized directly with the **Web Audio API** — zero external audio files. |
+| 🔎 | **Global City Search & Favorites** | Instant worldwide city autocomplete with keyboard navigation, pinned favorite cities in `localStorage`, live ticking local city clock, and **`°C / °F`** unit switching. |
 
 ---
 
-## 🎬 Efek Animasi Langit
+## 🎬 Sky Animation Engine
 
-Mesin `SkyEngine` (`js/skyEngine.js`) merender suasana langit secara real-time di 60fps:
+`SkyEngine` (`js/skyEngine.js`) renders responsive, DPR-aware atmospheric scenes at 60fps:
 
-- ☀️ **Cerah Siang** — Gradien langit biru cerah, halo matahari hangat, berkas sinar berputar perlahan, dan partikel cahaya melayang.
-- 🌇 **Fajar & Senja (*Golden Hour*)** — Palet langit jingga-amber saat mendekati jam `sunrise` / `sunset` lokal.
-- 🌙 **Malam Berbintang** — Langit malam dalam dengan bintang berkelip berlapis, bulan berkawah dengan halo, dan bintang jatuh acak.
-- ☁️ **Berawan & Mendung** — Awan volumetrik 3 lapisan yang melayang sesuai kecepatan angin aktual.
-- 🌧️ **Hujan & Gerimis** — Tetesan hujan miring mengikuti arah/kecepatan angin dengan percikan halus di tepi bawah.
-- ⛈️ **Badai Petir** — Hujan deras, awan gelap, kilatan petir bercabang prosedural + sinkronisasi suara guntur. *(Tips: klik tombol **Badai Petir** berulang kali untuk memicu sambaran petir manual!)*
-- ❄️ **Salju & 🌫️ Kabut** — Serpihan salju berayun lembut dan lapisan kabut bergelombang.
+- ☀️ **Clear Daylight** — Radiant sunlit gradient, multi-layered solar halo, slowly rotating sunbeams, and drifting light motes.
+- 🌇 **Dawn & Golden Hour** — Warm amber-coral twilight skies calculated dynamically from each city's real `sunrise` and `sunset` timestamps.
+- 🌙 **Clear Starry Night** — Deep nocturnal indigo sky, depth-layered twinkling stars, softly glowing cratered moon, and occasional shooting stars.
+- ☁️ **Partly Cloudy & Overcast** — Volumetric 3-layer drifting clouds whose velocity scales with actual wind speed.
+- 🌧️ **Rain & Drizzle** — Wind-angled diagonal rain streaks with animated horizon splash ripples.
+- ⛈️ **Thunderstorm** — Heavy storm rain, dense dark rolling clouds, and procedural branching lightning bolts synced with Web Audio thunder. *(Tip: click **Storm** again while active to trigger an instant manual lightning strike!)*
+- ❄️ **Snow & 🌫️ Fog** — Sinusoidally swaying snowflakes and undulating translucent mist layers.
 
 ---
 
-## 🛰️ Sumber Data Real-Time
+## 🛰️ Real-Time Data Sources
 
-Semua data cuaca dan kualitas udara bersifat **100% live** dan gratis tanpa konfigurasi API key:
+All weather and air-quality telemetry is **100% live**, CORS-enabled, and requires **zero API keys**:
 
-| Layanan | Endpoint / Kegunaan |
+| Provider | Data & Purpose |
 | :--- | :--- |
-| ☁️ **Open-Meteo Forecast API** | Suhu, rasa suhu, kode cuaca WMO, kelembapan, titik embun, angin, hembusan, UV, visibilitas, barometer, prakiraan 24 jam & 7 hari |
-| 🍃 **Open-Meteo Air Quality API** | US AQI, European AQI, PM2.5, PM10, Ozon (O₃), dan NO₂ |
-| 🔎 **Open-Meteo Geocoding API** | Pencarian kota seluruh dunia beserta koordinat & kode negara |
-| 📍 **BigDataCloud + GeoJS / ipwho.is** | Reverse geocoding GPS & *fallback* deteksi lokasi otomatis |
+| ☁️ **Open-Meteo Forecast API** | Current temperature, feels-like, WMO weather codes, humidity, dew point, wind speed/direction/gusts, UV index, visibility, barometric pressure, 24-hour & 7-day forecasts |
+| 🍃 **Open-Meteo Air Quality API** | Live US AQI, European AQI, PM2.5, PM10, Ozone (O₃), and NO₂ |
+| 🔎 **Open-Meteo Geocoding API** | Worldwide city search with region, country code, and coordinates |
+| 📍 **BigDataCloud + GeoJS / ipwho.is** | GPS reverse geocoding & automatic IP-based location fallback |
 
 ---
 
-## 🚀 Cara Menjalankan Secara Lokal
+## 🚀 Getting Started
 
-Karena aplikasi ini menggunakan **ES Modules** (`<script type="module">`), jalankan melalui server HTTP lokal (bukan membuka `file://` secara langsung):
+Because ATMOS uses native **ES Modules** (`<script type="module">`), serve it via any local HTTP server (rather than opening via `file://`):
 
-### 1️⃣ Clone Repository
+### 1️⃣ Clone the Repository
 ```bash
 git clone https://github.com/Freddy47588/atmos-live.git
 cd atmos-live
 ```
 
-### 2️⃣ Jalankan Server Lokal
-Pilih salah satu perintah berikut:
+### 2️⃣ Start a Local Server
+Choose any static server you have installed:
 
 ```bash
-# Menggunakan Node.js (npx)
+# Using Node.js (npx)
 npx serve .
 
-# Atau menggunakan Python 3
+# Or using Python 3
 python -m http.server 8080
 ```
 
-### 3️⃣ Buka di Browser
-Kunjungi `http://localhost:3000` (untuk `npx serve`) atau `http://localhost:8080` (untuk Python).
+### 3️⃣ Open in Browser
+Visit `http://localhost:3000` (with `npx serve`) or `http://localhost:8080` (with Python).
 
 ---
 
-## ⌨️ Pintasan & Interaksi
+## ⌨️ Controls & Interactions
 
-| Kontrol / Aksi | Fungsi |
+| Action / Control | Behavior |
 | :--- | :--- |
-| `↓` / `↑` di kotak pencarian | Navigasi daftar hasil kota |
-| `Enter` | Pilih kota yang disorot |
-| `Esc` | Tutup dropdown pencarian |
-| 🎯 Klik / geser grafik 24 jam | Inspeksi cuaca & metrik per jam secara presisi |
-| ⭐ Tombol Bintang | Simpan / hapus kota dari bar akses cepat |
-| 📍 Tombol Target GPS (`⌖`) | Deteksi ulang & kembali ke lokasi user saat ini |
-| 🔊 Tombol Suara | Aktifkan / matikan suara atmosfer Web Audio |
-| ⛈️ Klik ulang **Badai Petir** | Memicu sambaran petir + guntur manual |
+| `↓` / `↑` in search input | Navigate city search results |
+| `Enter` / `Esc` | Select highlighted city / close search dropdown |
+| 🌐 **`ID / EN` Button** | Toggle UI language between English and Indonesian |
+| 🌡️ **`°C / °F` Button** | Switch temperature (`°C` / `°F`) and wind (`km/h` / `m/s`) units |
+| 🎯 **Hover / Drag 24h Chart** | Scrub hour-by-hour weather metrics in real time |
+| ⭐ **Star Button** | Pin or unpin the current city in the quick-access bar |
+| 📍 **GPS Button (`⌖`)** | Re-detect and return to your current location |
+| 🔊 **Sound Button** | Toggle procedural Web Audio atmospheric soundscape |
+| ⛈️ **Click Storm Again** | Trigger an immediate manual lightning strike + thunder |
 
 ---
 
-## 🌐 Deploy Gratis (Static Hosting)
+## 🌐 Free Static Deployment
 
-Karena tidak memerlukan proses build, **ATMOS** bisa langsung di-deploy ke:
-- **GitHub Pages** — Aktifkan di *Settings → Pages → Deploy from `main` branch (`/root`)*.
-- **Netlify / Vercel / Cloudflare Pages** — Cukup sambungkan repository ini tanpa *build command* dan set output directory ke `.`.
-
----
-
-## 📚 Dokumentasi Lanjutan
-
-Ingin melihat diagram alur modul, cara kerja `SkyEngine`, dan arsitektur `SoundEngine` secara mendalam?
-👉 Baca **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)**
+With zero build step or backend dependencies, **ATMOS** deploys effortlessly to:
+- **GitHub Pages** — *Settings → Pages → Deploy from `main` branch (`/root`)*.
+- **Netlify / Vercel / Cloudflare Pages** — Connect the repository with no build command and publish directory `.`.
 
 ---
 
-## 📄 Lisensi
+## 📚 Technical Documentation
 
-Proyek ini dirilis di bawah lisensi **[MIT](./LICENSE)**. Bebas digunakan, dimodifikasi, dan dikembangkan lebih lanjut.
+Want a deep dive into the module dependency graph, `SkyEngine` rendering pipeline, `i18n` localization layer, and Web Audio synthesis?
+👉 Read **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)**
+
+---
+
+## 📄 License
+
+Released under the **[MIT License](./LICENSE)**. Feel free to use, modify, and build upon it.
 
 <div align="center">
-  <sub>Dibuat dengan ❤️ oleh <a href="https://github.com/Freddy47588">Freddy47588</a> · Data oleh <a href="https://open-meteo.com/">Open-Meteo</a></sub>
+  <sub>Built with ❤️ by <a href="https://github.com/Freddy47588">Freddy47588</a> · Weather data by <a href="https://open-meteo.com/">Open-Meteo</a></sub>
 </div>
