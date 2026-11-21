@@ -1,0 +1,1499 @@
+/* ==========================================================================
+   ATMOS — Interactive Real-Time Weather Observatory Stylesheet
+   ========================================================================== */
+
+:root {
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+
+  --text-primary: #f8fafc;
+  --text-secondary: rgba(241, 245, 249, 0.78);
+  --text-muted: rgba(226, 232, 240, 0.56);
+
+  --glass-bg: rgba(15, 23, 42, 0.34);
+  --glass-bg-hover: rgba(15, 23, 42, 0.46);
+  --glass-border: rgba(255, 255, 255, 0.14);
+  --glass-highlight: rgba(255, 255, 255, 0.08);
+  --accent: #38bdf8;
+  --accent-warm: #fbbf24;
+  --shadow-card: 0 18px 45px rgba(2, 6, 23, 0.28);
+
+  --radius-xl: 24px;
+  --radius-lg: 18px;
+  --radius-md: 12px;
+  --radius-pill: 999px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  background: #070d1a;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Fullscreen Canvas Background */
+#weather-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.app-shell {
+  position: relative;
+  z-index: 1;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 20px 22px 48px;
+}
+
+/* ==========================================================================
+   Topbar & Command Bar
+   ========================================================================== */
+.topbar {
+  display: grid;
+  grid-template-columns: auto minmax(220px, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.brand-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.35), rgba(30, 58, 138, 0.65));
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  display: grid;
+  place-items: center;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 20px rgba(2, 6, 23, 0.25);
+}
+
+.brand-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand-name {
+  font-weight: 800;
+  font-size: 1.15rem;
+  letter-spacing: 0.1em;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  background: rgba(16, 185, 129, 0.18);
+  border: 1px solid rgba(52, 211, 153, 0.42);
+  color: #6ee7b7;
+}
+
+.status-pill.sim-mode {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: rgba(251, 191, 36, 0.5);
+  color: #fde68a;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulseDot 2s infinite;
+}
+
+/* Search Box */
+.search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 520px;
+  width: 100%;
+  justify-self: center;
+  background: rgba(15, 23, 42, 0.42);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-pill);
+  padding: 4px 6px 4px 16px;
+  backdrop-filter: blur(18px);
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-box:focus-within {
+  border-color: rgba(56, 189, 248, 0.7);
+  background: rgba(15, 23, 42, 0.62);
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.14);
+}
+
+.search-icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+#city-search {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  padding: 8px 10px;
+  outline: none;
+}
+
+#city-search::placeholder {
+  color: var(--text-muted);
+}
+
+/* Hilangkan icon clear bawaan agar rapi */
+#city-search::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+
+.search-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: rgba(10, 17, 32, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(24px);
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  z-index: 50;
+}
+
+.search-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.search-item:last-child {
+  border-bottom: none;
+}
+
+.search-item:hover,
+.search-item.active {
+  background: rgba(56, 189, 248, 0.16);
+}
+
+.search-item-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search-flag {
+  font-size: 1.15rem;
+}
+
+.search-city {
+  font-weight: 600;
+  font-size: 0.93rem;
+}
+
+.search-region {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.search-coords {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.search-empty {
+  padding: 14px 16px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Action Buttons */
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-btn,
+.action-pill {
+  border: 1px solid var(--glass-border);
+  background: rgba(15, 23, 42, 0.4);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  cursor: pointer;
+  backdrop-filter: blur(14px);
+  transition: transform 0.16s ease, background 0.18s ease, border-color 0.18s ease;
+}
+
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+#geo-btn {
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+#geo-btn.loc-active {
+  background: rgba(56, 189, 248, 0.24);
+  color: #7dd3fc;
+  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5);
+}
+
+.action-pill {
+  height: 36px;
+  padding: 0 13px;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.icon-btn:hover,
+.action-pill:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.28);
+  transform: translateY(-1px);
+}
+
+.action-pill[aria-pressed='true'] {
+  background: rgba(56, 189, 248, 0.24);
+  border-color: rgba(56, 189, 248, 0.55);
+  color: #e0f2fe;
+}
+
+.icon-btn.spinning svg {
+  animation: spin360 0.75s linear infinite;
+}
+
+/* Sound Equalizer Bars */
+.eq-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 13px;
+}
+
+.eq-bars i {
+  display: block;
+  width: 2.5px;
+  border-radius: 2px;
+  background: #38bdf8;
+  animation: eqBounce 0.9s ease-in-out infinite;
+}
+
+.eq-bars i:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.eq-bars i:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* ==========================================================================
+   Quick Cities Strip & FX Playground Dock
+   ========================================================================== */
+.quick-cities-bar {
+  margin-bottom: 10px;
+}
+
+.quick-cities-scroll {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 0 6px;
+  scrollbar-width: none;
+}
+
+.quick-cities-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.city-chip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 13px;
+  border-radius: var(--radius-pill);
+  background: rgba(15, 23, 42, 0.34);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 0.83rem;
+  font-weight: 500;
+  cursor: pointer;
+  backdrop-filter: blur(14px);
+  transition: all 0.2s ease;
+}
+
+.city-chip:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.city-chip.active {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.42);
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 6px 18px rgba(2, 6, 23, 0.22);
+}
+
+.city-chip-temp {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: #fde68a;
+}
+
+.city-chip-star {
+  color: #fbbf24;
+  font-size: 0.78rem;
+}
+
+/* FX Dock */
+.fx-dock {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  background: rgba(15, 23, 42, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.fx-dock::-webkit-scrollbar {
+  display: none;
+}
+
+.fx-dock-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.fx-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fx-pill {
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 5px 11px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.fx-pill:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+.fx-pill.active {
+  background: rgba(56, 189, 248, 0.24);
+  border-color: rgba(56, 189, 248, 0.55);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* Toast Banner */
+.toast-banner {
+  margin-bottom: 14px;
+  padding: 11px 16px;
+  border-radius: var(--radius-md);
+  background: rgba(15, 23, 42, 0.78);
+  border: 1px solid rgba(251, 191, 36, 0.45);
+  color: #fef3c7;
+  font-size: 0.86rem;
+  backdrop-filter: blur(16px);
+}
+
+/* ==========================================================================
+   Main Bento Dashboard Grid
+   ========================================================================== */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.68fr) minmax(300px, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.col-primary,
+.col-secondary {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+.glass-card {
+  position: relative;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: 22px 24px;
+  backdrop-filter: blur(22px) saturate(135%);
+  -webkit-backdrop-filter: blur(22px) saturate(135%);
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.25s ease, transform 0.25s ease;
+}
+
+.glass-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.02) 45%, rgba(255, 255, 255, 0.08));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.card-title {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.card-subtitle {
+  margin: 3px 0 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Hero Weather Card
+   ========================================================================== */
+.hero-card {
+  padding: 26px 28px;
+}
+
+.hero-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.location-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.city-name {
+  margin: 0;
+  font-size: clamp(1.65rem, 3vw, 2.2rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+
+.star-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-muted);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.star-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fde047;
+}
+
+.star-btn[aria-pressed='true'] {
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.45);
+  background: rgba(251, 191, 36, 0.16);
+}
+
+.star-btn[aria-pressed='true'] svg {
+  fill: #fbbf24;
+}
+
+.city-sub {
+  margin: 5px 0 0;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+.local-clock-box {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.local-time {
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.local-date {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.hero-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-bottom: 22px;
+}
+
+.temp-cluster {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.hero-icon-wrap {
+  width: 92px;
+  height: 92px;
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.25));
+}
+
+.temp-digits {
+  display: flex;
+  align-items: flex-start;
+  line-height: 0.95;
+}
+
+.temp-value {
+  font-size: clamp(4rem, 7vw, 5.4rem);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  font-variant-numeric: tabular-nums;
+}
+
+.temp-unit {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-top: 8px;
+  margin-left: 3px;
+}
+
+.condition-cluster {
+  flex: 1;
+  min-width: 230px;
+}
+
+.condition-label {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.condition-hi-lo {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  margin-bottom: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.hero-mini-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mini-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 11px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.mini-stat strong {
+  color: #ffffff;
+}
+
+.insight-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  border-radius: 15px;
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.16), rgba(255, 255, 255, 0.05));
+  border: 1px solid rgba(125, 211, 252, 0.22);
+}
+
+.insight-spark {
+  color: #fde047;
+  font-size: 1.05rem;
+  flex-shrink: 0;
+}
+
+.insight-banner p {
+  margin: 0;
+  font-size: 0.87rem;
+  line-height: 1.45;
+  color: #f1f5f9;
+}
+
+/* ==========================================================================
+   Hourly Interactive Chart & Strip
+   ========================================================================== */
+.metric-tabs {
+  display: inline-flex;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-pill);
+  padding: 3px;
+  gap: 2px;
+}
+
+.tab-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.tab-btn:hover {
+  color: #ffffff;
+}
+
+.tab-btn.active {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+
+.hourly-chart-wrap {
+  position: relative;
+}
+
+.hourly-svg {
+  width: 100%;
+  height: 205px;
+  display: block;
+  cursor: crosshair;
+  touch-action: pan-y;
+  user-select: none;
+}
+
+.chart-axis-label {
+  fill: rgba(226, 232, 240, 0.62);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.chart-point-label {
+  fill: rgba(255, 255, 255, 0.88);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.hourly-scrub-hint {
+  margin-top: 8px;
+}
+
+.scrub-chip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 9px 14px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.83rem;
+}
+
+.scrub-icon {
+  display: inline-flex;
+  align-items: center;
+}
+
+.scrub-time {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: #7dd3fc;
+}
+
+.scrub-main {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  color: #ffffff;
+}
+
+.scrub-meta {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+/* Horizontal Mini Hour Strip */
+.hourly-strip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin-top: 14px;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.hour-pill {
+  flex: 0 0 68px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 6px;
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.hour-pill:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
+}
+
+.hour-pill.active {
+  background: rgba(56, 189, 248, 0.22);
+  border-color: rgba(56, 189, 248, 0.55);
+}
+
+.hour-pill-time {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+.hour-pill-temp {
+  font-weight: 700;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.hour-pill-rain {
+  font-size: 0.7rem;
+  color: #7dd3fc;
+  min-height: 14px;
+}
+
+/* ==========================================================================
+   Telemetry Bento Grid (6 Metric Cards)
+   ========================================================================== */
+.telemetry-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.metric-card {
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 182px;
+}
+
+.metric-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.metric-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+}
+
+.metric-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.1);
+  color: #f8fafc;
+}
+
+/* Compass */
+.compass-layout {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.compass-svg {
+  width: 102px;
+  height: 102px;
+  flex-shrink: 0;
+}
+
+.compass-cardinal {
+  fill: rgba(226, 232, 240, 0.65);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.compass-needle {
+  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.compass-big {
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.compass-big small {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.compass-sub {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* Sun Arc */
+.sun-arc-svg {
+  width: 100%;
+  height: 106px;
+  display: block;
+}
+
+.arc-time-label {
+  fill: #f8fafc;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.arc-dur-label {
+  fill: rgba(226, 232, 240, 0.6);
+  font-size: 10px;
+}
+
+.sun-arc-caption {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* AQI & UV Gauges */
+.metric-big-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.metric-big {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.metric-unit-sm {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.gauge-bar {
+  position: relative;
+  height: 8px;
+  border-radius: 999px;
+  margin-bottom: 12px;
+}
+
+.aqi-bar {
+  background: linear-gradient(90deg, #34d399 0%, #fbbf24 30%, #fb923c 55%, #f87171 78%, #c084fc 100%);
+}
+
+.uv-bar {
+  background: linear-gradient(90deg, #34d399 0%, #fbbf24 35%, #fb923c 60%, #f87171 82%, #c084fc 100%);
+}
+
+.gauge-marker {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2.5px solid #0f172a;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+  transform: translate(-50%, -50%);
+  transition: left 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.pollutant-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pollutant-row strong {
+  color: #f8fafc;
+}
+
+.metric-tip {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.42;
+  color: var(--text-secondary);
+}
+
+/* Humidity Progress */
+.progress-track {
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #38bdf8, #818cf8);
+  transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Pressure & Visibility */
+.dual-stat-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dual-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dual-label {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.dual-val {
+  font-family: var(--font-mono);
+  font-size: 0.94rem;
+  font-weight: 600;
+}
+
+.dual-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ==========================================================================
+   7-Day Forecast Sidebar
+   ========================================================================== */
+.daily-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.day-row {
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.day-row:hover {
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.day-row.expanded {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(125, 211, 252, 0.28);
+}
+
+.day-trigger {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 78px 40px 38px 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 13px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  cursor: pointer;
+  text-align: left;
+}
+
+.day-name {
+  font-weight: 600;
+  font-size: 0.87rem;
+}
+
+.day-rain {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: #7dd3fc;
+}
+
+.day-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.day-min,
+.day-max {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  width: 30px;
+}
+
+.day-min {
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.day-max {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.range-track {
+  position: relative;
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.range-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #38bdf8, #fbbf24, #fb923c);
+}
+
+.day-details {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px 14px;
+  padding: 0 14px 13px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 10px;
+  font-size: 0.77rem;
+  color: var(--text-secondary);
+}
+
+.day-details[hidden] {
+  display: none;
+}
+
+.day-details strong {
+  color: #ffffff;
+}
+
+/* Station Metadata Card */
+.station-dl {
+  margin: 0 0 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.station-dl dt {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 3px;
+}
+
+.station-dl dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--text-primary);
+}
+
+.api-credit {
+  margin: 0;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.api-credit a {
+  color: #7dd3fc;
+  text-decoration: none;
+}
+
+.api-credit a:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   SVG Weather Icon Micro-Animations
+   ========================================================================== */
+.anim-spin-slow {
+  animation: spin360 22s linear infinite;
+}
+
+.anim-float-slow {
+  animation: floatY 4.5s ease-in-out infinite;
+}
+
+.anim-drift {
+  animation: driftX 5.5s ease-in-out infinite;
+}
+
+.anim-pulse-soft {
+  animation: pulseScale 3.8s ease-in-out infinite;
+  transform-origin: 40px 23px;
+}
+
+.anim-twinkle {
+  animation: twinkle 2.4s ease-in-out infinite;
+}
+
+.anim-twinkle-delay {
+  animation: twinkle 2.8s ease-in-out 1s infinite;
+}
+
+.anim-drop-1 {
+  animation: rainFall 1.1s linear infinite;
+}
+.anim-drop-2 {
+  animation: rainFall 1.1s linear 0.35s infinite;
+}
+.anim-drop-3 {
+  animation: rainFall 1.1s linear 0.7s infinite;
+}
+
+.anim-snow-1 {
+  animation: snowFall 2.4s ease-in-out infinite;
+}
+.anim-snow-2 {
+  animation: snowFall 2.6s ease-in-out 0.8s infinite;
+}
+.anim-snow-3 {
+  animation: snowFall 2.3s ease-in-out 1.4s infinite;
+}
+
+.anim-flash {
+  animation: lightningBlink 2.8s ease-in-out infinite;
+}
+
+.anim-fog-1 {
+  animation: driftX 4s ease-in-out infinite;
+}
+.anim-fog-2 {
+  animation: driftX 4.6s ease-in-out reverse infinite;
+}
+
+@keyframes spin360 {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes floatY {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes driftX {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(3px);
+  }
+}
+
+@keyframes pulseScale {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.07);
+  }
+}
+
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes rainFall {
+  0% {
+    transform: translate(0, -4px);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-3px, 8px);
+    opacity: 0;
+  }
+}
+
+@keyframes snowFall {
+  0% {
+    transform: translate(0, -4px);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(3px, 7px);
+    opacity: 0;
+  }
+}
+
+@keyframes lightningBlink {
+  0%, 74%, 100% {
+    opacity: 0.95;
+  }
+  76%, 80% {
+    opacity: 0.18;
+  }
+  78% {
+    opacity: 1;
+  }
+}
+
+@keyframes pulseDot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.45);
+    opacity: 0.55;
+  }
+}
+
+@keyframes eqBounce {
+  0%, 100% {
+    height: 4px;
+  }
+  50% {
+    height: 13px;
+  }
+}
+
+/* Loading Shimmer State */
+[aria-busy='true'] .hero-card,
+[aria-busy='true'] .hourly-card,
+[aria-busy='true'] .daily-card {
+  opacity: 0.85;
+}
+
+/* ==========================================================================
+   Responsive Design
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .app-shell {
+    padding: 14px 14px 36px;
+  }
+
+  .topbar {
+    grid-template-columns: 1fr auto;
+    row-gap: 10px;
+  }
+
+  .search-box {
+    grid-column: 1 / -1;
+    order: 3;
+    max-width: none;
+  }
+
+  .action-text {
+    display: none;
+  }
+
+  .hero-card {
+    padding: 20px 18px;
+  }
+
+  .hero-top {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .local-clock-box {
+    text-align: left;
+  }
+
+  .telemetry-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .glass-card {
+    padding: 18px;
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
