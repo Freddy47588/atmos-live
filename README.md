@@ -9,6 +9,9 @@
 **A modern, zero-dependency interactive weather web app powered by a 60fps HTML5 Canvas sky engine, procedural Web Audio weather ambience, automatic user geolocation, bilingual `ID / EN` support, and 100% live meteorological & air-quality data — no API keys or build step required.**
 
 <p>
+  <a href="https://atmos-live.pages.dev">
+    <img src="https://img.shields.io/badge/▶%20LIVE%20DEMO-Cloudflare%20Pages-F38020?style=for-the-badge&logo=cloudflarepages&logoColor=white" alt="Live Demo" />
+  </a>
   <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white" alt="HTML5" />
   <img src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white" alt="CSS3" />
   <img src="https://img.shields.io/badge/JavaScript_ES6+-F7DF1E?style=for-the-badge&logo=javascript&logoColor=111827" alt="JavaScript ES6+" />
